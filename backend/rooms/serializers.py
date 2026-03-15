@@ -40,25 +40,49 @@ class RoomCreateSerializer(serializers.ModelSerializer):
 
 
 class BookingSerializer(serializers.ModelSerializer):
+    """Read serializer used by both admin and resident."""
     resident_name = serializers.CharField(source='resident.full_name', read_only=True)
     resident_email = serializers.CharField(source='resident.email', read_only=True)
+    # Room detail fields sourced from the FK
+    room_number = serializers.CharField(source='room.room_number', read_only=True, default=None)
+    room_type = serializers.CharField(source='room.room_type', read_only=True, default=None)
+    floor = serializers.IntegerField(source='room.floor', read_only=True, default=None)
+    rent_amount = serializers.DecimalField(
+        source='room.rent_amount', max_digits=10, decimal_places=2, read_only=True, default=None
+    )
 
     class Meta:
         model = Booking
-        fields = ['id', 'resident', 'resident_name', 'resident_email',
-                  'preferred_room_type', 'move_in_date', 'duration_months',
-                  'status', 'rejection_reason', 'created_at']
-        read_only_fields = ['id', 'resident', 'status', 'rejection_reason', 'created_at']
+        fields = [
+            'id', 'resident', 'resident_name', 'resident_email',
+            'room', 'room_number', 'room_type', 'floor', 'rent_amount',
+            'preferred_room_type',  # kept for backward compat
+            'move_in_date', 'duration_months',
+            'status', 'rejection_reason', 'created_at',
+        ]
+        read_only_fields = [
+            'id', 'resident', 'status', 'rejection_reason', 'created_at',
+            'preferred_room_type',
+        ]
 
 
 class BookingCreateSerializer(serializers.ModelSerializer):
+    """Write serializer: resident submits a room UUID, move-in date, and duration."""
     class Meta:
         model = Booking
-        fields = ['preferred_room_type', 'move_in_date', 'duration_months']
+        fields = ['room', 'move_in_date', 'duration_months']
+
+    def validate_room(self, value):
+        if value is None:
+            raise serializers.ValidationError('A room must be selected.')
+        if value.available_beds() == 0:
+            raise serializers.ValidationError('This room has no available beds. Please choose another room.')
+        return value
 
 
 class AdminBookingApprovalSerializer(serializers.Serializer):
-    bed_id = serializers.UUIDField()
+    """Kept for import compat; no longer used in approve view."""
+    pass
 
 
 class AllocationSerializer(serializers.ModelSerializer):

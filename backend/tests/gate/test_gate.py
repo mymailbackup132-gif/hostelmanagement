@@ -27,6 +27,7 @@ def active_allocation(test_users):
     bed = Bed.objects.create(room=room, bed_number=1, is_occupied=True)
     booking = Booking.objects.create(
         resident=test_users['resident'],
+        room=room,
         preferred_room_type='single',
         move_in_date=date.today(),
         duration_months=1,

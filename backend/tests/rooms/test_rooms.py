@@ -30,11 +30,11 @@ def test_room_creation(sample_room):
     assert sample_room['room'].available_beds() == 1
 
 @pytest.mark.django_db
-def test_booking_creation_api(api_client, test_users):
+def test_booking_creation_api(api_client, test_users, sample_room):
     api_client.force_authenticate(user=test_users['resident'])
     url = reverse('booking-create')
     payload = {
-        'preferred_room_type': 'single',
+        'room': str(sample_room['room'].id),
         'move_in_date': (date.today() + timedelta(days=10)).isoformat(),
         'duration_months': 3
     }
@@ -47,13 +47,14 @@ def test_booking_creation_api(api_client, test_users):
 def test_admin_approve_booking(api_client, test_users, sample_room):
     booking = Booking.objects.create(
         resident=test_users['resident'],
+        room=sample_room['room'],
         preferred_room_type='single',
         move_in_date=date.today(),
         duration_months=1
     )
     api_client.force_authenticate(user=test_users['admin'])
     url = reverse('booking-approve', kwargs={'pk': booking.id})
-    payload = {'bed_id': str(sample_room['bed'].id)}
+    payload = {}  # No bed_id needed anymore
     response = api_client.post(url, payload, format='json')
     
     assert response.status_code == status.HTTP_200_OK

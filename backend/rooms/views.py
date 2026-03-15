@@ -136,7 +136,7 @@ class AdminBookingListView(generics.ListAPIView):
 
 
 class AdminBookingApproveView(APIView):
-    """POST /api/rooms/admin/bookings/<pk>/approve/ — Approve and assign a bed."""
+    """POST /api/rooms/admin/bookings/<pk>/approve/ — Approve and auto-assign a bed."""
     permission_classes = [IsAdmin]
 
     def post(self, request, pk):
@@ -145,11 +145,19 @@ class AdminBookingApproveView(APIView):
         except Booking.DoesNotExist:
             return Response({'detail': 'Booking not found.'}, status=404)
 
-        bed_id = request.data.get('bed_id')
-        try:
-            bed = Bed.objects.get(pk=bed_id, is_occupied=False)
-        except Bed.DoesNotExist:
-            return Response({'detail': 'Bed not found or already occupied.'}, status=400)
+        if booking.status != 'pending':
+            return Response({'detail': f'Booking is already {booking.status}.'}, status=400)
+
+        if not booking.room:
+            return Response({'detail': 'Booking has no room assigned. Cannot approve.'}, status=400)
+
+        # Auto-pick the first available bed in the requested room
+        bed = booking.room.beds.filter(is_occupied=False).first()
+        if not bed:
+            return Response(
+                {'detail': f'No available beds in Room {booking.room.room_number}. Please reject this booking or free up a bed first.'},
+                status=400
+            )
 
         # Create allocation
         alloc = Allocation.objects.create(
@@ -179,6 +187,7 @@ class AdminBookingApproveView(APIView):
         )
 
         return Response({'detail': 'Booking approved and allocation created.', 'allocation_id': str(alloc.id)})
+
 
 
 class AdminBookingRejectView(APIView):

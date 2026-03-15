@@ -50,9 +50,8 @@ export default function ResidentRooms() {
   const handleBook = (room) => {
     if (hasAllocation) return toast.error('You already have an active room allocation.')
     if (existingBooking) return toast.error('You already have an active booking request.')
-    // Support both raw room objects (room_type) and aggregated room-type objects (type)
-    const roomType = room.room_type || room.type
-    setBookingForm({ preferred_room_type: roomType, move_in_date: '', duration_months: 1 })
+    // Store the selected room object for display; send only its id to backend
+    setBookingForm({ room, move_in_date: '', duration_months: 1 })
   }
 
   const submitBooking = async (e) => {
@@ -60,8 +59,9 @@ export default function ResidentRooms() {
     setSubmitLoading(true)
     try {
       const payload = {
-        ...bookingForm,
-        duration_months: parseInt(bookingForm.duration_months, 10)
+        room: bookingForm.room.id,
+        move_in_date: bookingForm.move_in_date,
+        duration_months: parseInt(bookingForm.duration_months, 10),
       }
       await api.post('/rooms/bookings/', payload)
       toast.success('Booking request submitted! Waiting for admin approval.')
@@ -101,21 +101,6 @@ export default function ResidentRooms() {
 
   if (loading) return <div style={{ color: 'var(--text-muted)' }}>Loading rooms...</div>
 
-  // Group rooms by type for aggregated display to resident
-  const roomTypes = {}
-  rooms.forEach(r => {
-    if (!roomTypes[r.room_type]) {
-      roomTypes[r.room_type] = {
-        type: r.room_type,
-        rent: r.rent_amount,
-        totalBedsStr: r.total_beds,
-        available: 0,
-        photos: r.photos_list || []
-      }
-    }
-    roomTypes[r.room_type].available += r.available_beds
-  })
-
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
@@ -132,7 +117,7 @@ export default function ResidentRooms() {
                 <Clock size={16} color="var(--warning)" /> Pending Booking Request
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                You requested a <strong>{existingBooking.preferred_room_type}</strong> room starting on {existingBooking.move_in_date}. 
+                You requested <strong>Room {existingBooking.room_number || "—"} ({existingBooking.room_type || existingBooking.preferred_room_type})</strong> starting on {existingBooking.move_in_date}. 
                 Waiting for admin approval.
               </p>
             </div>
@@ -159,14 +144,14 @@ export default function ResidentRooms() {
         </div>
       )}
 
-      {/* Room Types Grid */}
+      {/* Individual Rooms Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-        {Object.values(roomTypes).map(rt => {
-          const isAvailable = rt.available > 0
+        {rooms.map(room => {
+          const isAvailable = room.available_beds > 0
           return (
-            <div key={rt.type} className="card" style={{ overflow: 'hidden', opacity: isAvailable ? 1 : 0.7 }}>
-              {rt.photos.length > 0 ? (
-                <img src={rt.photos[0].image} alt={rt.type} style={{ width: '100%', height: 180, objectFit: 'cover' }} />
+            <div key={room.id} className="card" style={{ overflow: 'hidden', opacity: isAvailable ? 1 : 0.7 }}>
+              {room.photos_list && room.photos_list.length > 0 ? (
+                <img src={room.photos_list[0].image} alt={`Room ${room.room_number}`} style={{ width: '100%', height: 180, objectFit: 'cover' }} />
               ) : (
                 <div style={{ width: '100%', height: 160, background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                   <BedDouble size={48} opacity={0.2} />
@@ -176,13 +161,16 @@ export default function ResidentRooms() {
               <div style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '1.2rem', textTransform: 'capitalize' }}>{rt.type} Room</div>
+                    <div style={{ fontWeight: 800, fontSize: '1.2rem', textTransform: 'capitalize' }}>
+                      Room {room.room_number} <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.15rem 0.4rem', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginLeft: 6 }}>{room.room_type}</span>
+                    </div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 2 }}>Floor {room.floor}</div>
                     <div style={{ color: isAvailable ? 'var(--success)' : 'var(--danger)', fontSize: '0.85rem', fontWeight: 600, marginTop: 4 }}>
-                      {isAvailable ? `${rt.available} beds available` : 'Fully Occupied'}
+                      {isAvailable ? `${room.available_beds} beds available` : 'Fully Occupied'}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--brand-light)' }}>₹{rt.rent}</span>
+                    <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--brand-light)' }}>₹{room.rent_amount}</span>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>/month</div>
                   </div>
                 </div>
@@ -197,7 +185,7 @@ export default function ResidentRooms() {
                   className="btn-primary" 
                   style={{ width: '100%', padding: '0.7rem' }}
                   disabled={!isAvailable || existingBooking || hasAllocation}
-                  onClick={() => handleBook(rt)}
+                  onClick={() => setBookingForm({ room: room, move_in_date: '', duration_months: 1 })}
                 >
                   {!isAvailable ? 'Not Available' : existingBooking ? 'Request Pending' : hasAllocation ? 'Already Allocated' : 'Request Bed'}
                 </button>
@@ -219,7 +207,7 @@ export default function ResidentRooms() {
             <div style={{ background: 'rgba(99,102,241,0.08)', borderRadius: 8, padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
               <Info size={18} color="var(--brand-light)" style={{ flexShrink: 0, marginTop: 2 }} />
               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                You are requesting a <strong style={{ color: 'var(--text)', textTransform: 'capitalize' }}>{bookingForm.preferred_room_type}</strong> room. The admin will assign you a specific room and bed number upon approval.
+                You are requesting <strong>Room {bookingForm.room.room_number}</strong> ({bookingForm.room.room_type}, ₹{bookingForm.room.rent_amount}/mo). The admin will assign you a specific bed upon approval.
               </div>
             </div>
 
@@ -228,7 +216,7 @@ export default function ResidentRooms() {
                 <label>Expected Move-in Date</label>
                 <input 
                   type="date" className="input" required
-                  min={new Date().toISOString().split('T')[0]} // restrict past dates
+                  min={new Date().toISOString().split('T')[0]}
                   value={bookingForm.move_in_date}
                   onChange={e => setBookingForm({ ...bookingForm, move_in_date: e.target.value })}
                 />

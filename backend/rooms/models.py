@@ -58,13 +58,21 @@ class Booking(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     resident = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
-    preferred_room_type = models.CharField(max_length=10, choices=Room.ROOM_TYPES)
+    room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
+    # Denormalized from room.room_type for backward compat (auto-filled on save)
+    preferred_room_type = models.CharField(max_length=10, choices=Room.ROOM_TYPES, blank=True)
     move_in_date = models.DateField()
     duration_months = models.PositiveIntegerField(default=1)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     rejection_reason = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-populate preferred_room_type from the linked room
+        if self.room and not self.preferred_room_type:
+            self.preferred_room_type = self.room.room_type
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['-created_at']

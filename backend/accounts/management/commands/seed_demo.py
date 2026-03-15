@@ -1,8 +1,9 @@
 import os
 import getpass
+from datetime import date, timedelta
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from rooms.models import Room, Bed
+from rooms.models import Room, Bed, Booking
 
 User = get_user_model()
 
@@ -40,13 +41,14 @@ class Command(BaseCommand):
 
         # 2. Basic Resident
         resident_email = 'resident@demo.com'
+        resident = None
 
         if not User.objects.filter(email=resident_email).exists():
             resident = User.objects.create_user(
                 email=resident_email,
                 password='password123',
                 full_name='Demo Resident',
-                phone_number='8888888888',
+                phone='8888888888',
                 role='resident'
             )
             # Simulate they finished profile setup
@@ -54,6 +56,7 @@ class Command(BaseCommand):
             resident.save()
             self.stdout.write(self.style.SUCCESS(f'Created Resident: {resident_email} / password123\n'))
         else:
+            resident = User.objects.get(email=resident_email)
             self.stdout.write(f'Resident {resident_email} already exists.\n')
 
         # 3. Create Rooms & Beds
@@ -91,6 +94,20 @@ class Command(BaseCommand):
         else:
             self.stdout.write('Demo rooms already exist.')
 
+        # 4. Create a demo pending booking for the resident (linked to Room 101)
+        if resident and not Booking.objects.filter(resident=resident, status='pending').exists():
+            room101 = Room.objects.filter(room_number='101').first()
+            if room101:
+                Booking.objects.create(
+                    resident=resident,
+                    room=room101,
+                    preferred_room_type=room101.room_type,
+                    move_in_date=date.today() + timedelta(days=7),
+                    duration_months=3,
+                )
+                self.stdout.write(self.style.SUCCESS('Created demo pending booking for resident in Room 101.'))
+
         self.stdout.write(self.style.SUCCESS('\nDemo data seeding complete!'))
         self.stdout.write('If you created an Admin, you can log in with those credentials.')
         self.stdout.write('For the resident demo, log in with: resident@demo.com / password123')
+
