@@ -31,10 +31,14 @@ The backend uses Python's isolated virtual environments.
 
 ```bash
 cd backend
-python3 -m venv .venv
+python -m venv .venv
+# On Mac/Linux:
 source .venv/bin/activate
+# On Windows:
+# .venv\Scripts\activate
 pip install -r requirements.txt
 ```
+
 
 **Database Migrations & Demo Data:**
 ```bash
@@ -68,9 +72,13 @@ We enforce strict testing for the backend APIs. To run the full test suite acros
 ```bash
 # From the backend directory:
 cd backend
+# On Mac/Linux:
 source .venv/bin/activate
+# On Windows:
+# .venv\Scripts\activate
 pytest tests/ -v
 ```
+
 
 ---
 

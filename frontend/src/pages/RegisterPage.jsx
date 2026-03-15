@@ -78,7 +78,7 @@ export default function RegisterPage() {
               <label>Full Name</label>
               <div style={{ position: 'relative' }}>
                 <User size={15} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input id="reg-name" className="input" style={{ paddingLeft: '2.75rem' }} type="text" placeholder="Rushendra Nuthi" value={form.full_name} onChange={(e) => set('full_name', e.target.value)} required />
+                <input id="reg-name" className="input" style={{ paddingLeft: '2.75rem' }} type="text" placeholder="Enter your Name" value={form.full_name} onChange={(e) => set('full_name', e.target.value)} required />
               </div>
             </div>
             <div>

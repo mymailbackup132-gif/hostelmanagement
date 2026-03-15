@@ -136,7 +136,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/Users/rushendra/Documents/Projects/HostelManagement/backend/django_debug.log',
+            'filename': BASE_DIR / 'django_debug.log',
         },
     },
     'loggers': {

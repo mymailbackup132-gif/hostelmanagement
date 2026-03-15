@@ -2,7 +2,7 @@
   "name": "hostelmanagement",
   "version": "1.0.0",
   "scripts": {
-    "dev:backend": "cd backend && .venv/bin/python manage.py runserver",
+    "dev:backend": "node run-backend.js",
     "dev:frontend": "cd frontend && npm run dev -- --host",
     "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue.bold,green.bold\" \"npm run dev:backend\" \"npm run dev:frontend\""
   },

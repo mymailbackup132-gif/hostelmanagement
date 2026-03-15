@@ -28,7 +28,7 @@ class Command(BaseCommand):
                     email=admin_email,
                     password=admin_pass,
                     full_name=admin_name if admin_name else 'Demo Admin',
-                    phone_number=admin_phone if admin_phone else '9999999999',
+                    phone=admin_phone if admin_phone else '9999999999',
                     role='admin'
                 )
                 admin.is_staff = True
