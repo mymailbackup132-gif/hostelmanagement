@@ -40,3 +40,23 @@ class UPIQRCode(models.Model):
         # Deactivate all previous ones
         UPIQRCode.objects.filter(is_active=True).update(is_active=False)
         super().save(*args, **kwargs)
+
+
+class ReminderSchedule(models.Model):
+    """Singleton config: admin sets what time daily reminders run."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    enabled = models.BooleanField(default=False)
+    remind_hour = models.PositiveSmallIntegerField(default=9)     # 0-23
+    remind_minute = models.PositiveSmallIntegerField(default=0)   # 0-59
+    last_run_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Reminder Schedule'
+
+    @classmethod
+    def get_singleton(cls):
+        existing = cls.objects.first()
+        if existing:
+            return existing
+        return cls.objects.create()

@@ -1,6 +1,8 @@
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
+import datetime
 
 
 class UserManager(BaseUserManager):
@@ -45,6 +47,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_2fa_setup = models.BooleanField(default=False)
     totp_secret = models.CharField(max_length=64, blank=True)
+    # Profile completion — must upload photo + ID before booking
+    profile_complete = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
@@ -58,3 +62,24 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.full_name} ({self.email})'
+
+
+class EmailOTP(models.Model):
+    """Stores a short-lived OTP for email verification during registration."""
+    email = models.EmailField()
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    OTP_EXPIRY_MINUTES = 10
+
+    class Meta:
+        db_table = 'email_otps'
+        ordering = ['-created_at']
+
+    def is_expired(self):
+        expiry = self.created_at + datetime.timedelta(minutes=self.OTP_EXPIRY_MINUTES)
+        return timezone.now() > expiry
+
+    def __str__(self):
+        return f'OTP for {self.email}'

@@ -128,7 +128,7 @@ export default function AdminGate() {
         <p style={{ color: 'var(--text-muted)' }}>Scan resident QR codes to allow or deny entry.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.5fr)', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '1.5rem' }}>
 
         {/* Camera Panel */}
         <div>
@@ -302,7 +302,7 @@ export default function AdminGate() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Resident', 'Time', 'Result', 'Reason'].map(h => (
+                    {['Resident', 'Time', 'Result'].map(h => (
                       <th key={h} style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                     ))}
                   </tr>
@@ -327,7 +327,6 @@ export default function AdminGate() {
                           {log.result}
                         </span>
                       </td>
-                      <td style={{ padding: '0.6rem 0.75rem', color: 'var(--text-muted)' }}>{log.reason || '—'}</td>
                     </tr>
                   ))}
                 </tbody>

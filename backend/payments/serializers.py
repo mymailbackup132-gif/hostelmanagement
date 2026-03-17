@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Payment, UPIQRCode
+from .models import Payment, UPIQRCode, ReminderSchedule
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -15,3 +15,10 @@ class UPIQRSerializer(serializers.ModelSerializer):
     class Meta:
         model = UPIQRCode
         fields = ['id', 'image', 'uploaded_at', 'is_active']
+
+
+class ReminderScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReminderSchedule
+        fields = ['id', 'enabled', 'remind_hour', 'remind_minute', 'last_run_at', 'updated_at']
+        read_only_fields = ['id', 'last_run_at', 'updated_at']

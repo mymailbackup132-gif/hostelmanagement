@@ -142,7 +142,7 @@ export default function AdminRooms() {
             <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem' }}>{editingRoom ? 'Edit Room' : 'Add New Room'}</h2>
             
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
                 <div>
                   <label>Room Number</label>
                   <input type="text" className="input" value={form.room_number} onChange={e => setForm({...form, room_number: e.target.value})} required placeholder="101" />
@@ -162,7 +162,7 @@ export default function AdminRooms() {
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
                 <div>
                   <label>Total Beds</label>
                   <input type="number" className="input" value={form.total_beds} onChange={e => setForm({...form, total_beds: e.target.value})} required min={1} max={10} disabled={!!editingRoom} />

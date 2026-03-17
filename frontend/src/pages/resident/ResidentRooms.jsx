@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import { CheckCircle, Clock, XCircle, ChevronRight, BedDouble, Info } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../api'
 import toast from 'react-hot-toast'
 
 export default function ResidentRooms() {
+  const navigate = useNavigate()
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [bookingForm, setBookingForm] = useState(null)
   const [submitLoading, setSubmitLoading] = useState(false)
+  const [profileComplete, setProfileComplete] = useState(true)
 
   // Status checks to prevent multiple bookings
   const [existingBooking, setExistingBooking] = useState(null)
@@ -19,11 +22,22 @@ export default function ResidentRooms() {
 
   const fetchData = async () => {
     try {
-      const [rmRes, bkRes, alRes] = await Promise.allSettled([
+      const [rmRes, bkRes, alRes, profileRes] = await Promise.allSettled([
         api.get('/rooms/'),
         api.get('/rooms/bookings/my/'),
-        api.get('/rooms/allocation/')
+        api.get('/rooms/allocation/'),
+        api.get('/auth/profile/'),
       ])
+
+      if (profileRes.status === 'fulfilled') {
+        const complete = profileRes.value.data.profile_complete ?? true
+        setProfileComplete(complete)
+        if (!complete) {
+          toast.error('Complete your profile before browsing rooms.')
+          navigate('/resident/complete-profile', { replace: true })
+          return
+        }
+      }
 
       if (rmRes.status === 'fulfilled') setRooms(rmRes.value.data.results || rmRes.value.data)
       

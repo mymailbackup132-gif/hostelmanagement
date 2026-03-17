@@ -11,17 +11,27 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import TOTPVerifyPage from './pages/TOTPVerifyPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import NotificationPage from './pages/shared/Notifications'
 
 // Resident Pages
 import ResidentDashboard from './pages/resident/ResidentDashboard'
 import ResidentRooms from './pages/resident/ResidentRooms'
 import ResidentProfile from './pages/resident/ResidentProfile'
+import ResidentPayments from './pages/resident/ResidentPayments'
+import ResidentComplaints from './pages/resident/ResidentComplaints'
+import CompleteProfilePage from './pages/resident/CompleteProfilePage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminRooms from './pages/admin/AdminRooms'
 import AdminBookings from './pages/admin/AdminBookings'
 import AdminGate from './pages/admin/AdminGate'
+import AdminPayments from './pages/admin/AdminPayments'
+import AdminComplaints from './pages/admin/AdminComplaints'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminAnalytics from './pages/admin/AdminAnalytics'
 
 // Protected route wrapper
 function ProtectedRoute({ children, role }) {
@@ -34,13 +44,7 @@ function ProtectedRoute({ children, role }) {
   return <AppLayout>{children}</AppLayout>
 }
 
-// Placeholder for unbuilt pages
-const Stub = ({ title, phase }) => (
-  <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '4rem 0' }}>
-    <h2 style={{ color: 'var(--text)', marginBottom: '0.5rem' }}>{title}</h2>
-    <p>Coming up in Phase {phase}.</p>
-  </div>
-)
+// Unused Stub removed
 
 function AppRoutes() {
   const { user } = useAuth()
@@ -50,23 +54,28 @@ function AppRoutes() {
       <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/resident'} replace /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to="/resident" replace /> : <RegisterPage />} />
       <Route path="/totp-verify" element={<TOTPVerifyPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
 
       {/* Resident Routes */}
       <Route path="/resident" element={<ProtectedRoute role="resident"><ResidentDashboard /></ProtectedRoute>} />
       <Route path="/resident/rooms" element={<ProtectedRoute role="resident"><ResidentRooms /></ProtectedRoute>} />
-      <Route path="/resident/payments" element={<ProtectedRoute role="resident"><Stub title="My Payments" phase="4" /></ProtectedRoute>} />
-      <Route path="/resident/complaints" element={<ProtectedRoute role="resident"><Stub title="My Complaints" phase="5" /></ProtectedRoute>} />
+      <Route path="/resident/payments" element={<ProtectedRoute role="resident"><ResidentPayments /></ProtectedRoute>} />
+      <Route path="/resident/complaints" element={<ProtectedRoute role="resident"><ResidentComplaints /></ProtectedRoute>} />
       <Route path="/resident/profile" element={<ProtectedRoute role="resident"><ResidentProfile /></ProtectedRoute>} />
+      <Route path="/resident/complete-profile" element={<ProtectedRoute role="resident"><CompleteProfilePage /></ProtectedRoute>} />
+      <Route path="/resident/notifications" element={<ProtectedRoute role="resident"><NotificationPage /></ProtectedRoute>} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/rooms" element={<ProtectedRoute role="admin"><AdminRooms /></ProtectedRoute>} />
       <Route path="/admin/bookings" element={<ProtectedRoute role="admin"><AdminBookings /></ProtectedRoute>} />
-      <Route path="/admin/payments" element={<ProtectedRoute role="admin"><Stub title="Payment Validation" phase="4" /></ProtectedRoute>} />
-      <Route path="/admin/complaints" element={<ProtectedRoute role="admin"><Stub title="Complaint Management" phase="5" /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute role="admin"><Stub title="Resident Directory" phase="6" /></ProtectedRoute>} />
+      <Route path="/admin/payments" element={<ProtectedRoute role="admin"><AdminPayments /></ProtectedRoute>} />
+      <Route path="/admin/complaints" element={<ProtectedRoute role="admin"><AdminComplaints /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
       <Route path="/admin/gate" element={<ProtectedRoute role="admin"><AdminGate /></ProtectedRoute>} />
-      <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><Stub title="Data & Analytics" phase="6" /></ProtectedRoute>} />
+      <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><AdminAnalytics /></ProtectedRoute>} />
+      <Route path="/admin/notifications" element={<ProtectedRoute role="admin"><NotificationPage /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

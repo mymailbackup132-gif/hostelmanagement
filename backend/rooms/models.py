@@ -80,6 +80,7 @@ class Booking(models.Model):
 
 class Allocation(models.Model):
     QR_STATUS_CHOICES = [
+        ('pending_movein', 'Pending Move-in'),
         ('active', 'Active'),
         ('deactivated_payment', 'Deactivated - Payment'),
         ('deactivated_admin', 'Deactivated - Admin'),

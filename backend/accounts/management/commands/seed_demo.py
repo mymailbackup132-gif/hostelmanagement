@@ -96,16 +96,44 @@ class Command(BaseCommand):
 
         # 4. Create a demo pending booking for the resident (linked to Room 101)
         if resident and not Booking.objects.filter(resident=resident, status='pending').exists():
-            room101 = Room.objects.filter(room_number='101').first()
-            if room101:
-                Booking.objects.create(
-                    resident=resident,
-                    room=room101,
-                    preferred_room_type=room101.room_type,
-                    move_in_date=date.today() + timedelta(days=7),
-                    duration_months=3,
-                )
-                self.stdout.write(self.style.SUCCESS('Created demo pending booking for resident in Room 101.'))
+            create_booking = input("Do you want to create a demo pending booking for the resident? (y/N): ").strip().lower() == 'y'
+            if create_booking:
+                room101 = Room.objects.filter(room_number='101').first()
+                if room101:
+                    Booking.objects.create(
+                        resident=resident,
+                        room=room101,
+                        preferred_room_type=room101.room_type,
+                        move_in_date=date.today() + timedelta(days=7),
+                        duration_months=3,
+                    )
+                    self.stdout.write(self.style.SUCCESS('Created demo pending booking for resident in Room 101.\n'))
+
+        # 5. Payments Mock Data
+        from payments.models import Payment
+        create_payments = input("Do you want to create mock payment data (Paid, Pending, Overdue)? (y/N): ").strip().lower() == 'y'
+        if create_payments and resident:
+            if not Payment.objects.filter(resident=resident).exists():
+                Payment.objects.create(resident=resident, amount=3000, status='paid', due_date=date.today() - timedelta(days=40), paid_date=date.today() - timedelta(days=38), month_label=(date.today() - timedelta(days=30)).strftime('%B %Y'))
+                Payment.objects.create(resident=resident, amount=3000, status='paid', due_date=date.today() - timedelta(days=10), paid_date=date.today() - timedelta(days=8), month_label=date.today().strftime('%B %Y'))
+                Payment.objects.create(resident=resident, amount=3000, status='pending', due_date=date.today() + timedelta(days=10), month_label=(date.today() + timedelta(days=30)).strftime('%B %Y'))
+                Payment.objects.create(resident=resident, amount=3000, status='overdue', due_date=date.today() - timedelta(days=5), month_label=date.today().strftime('%B %Y'))
+                self.stdout.write(self.style.SUCCESS('Created mock payments for resident.\n'))
+            else:
+                self.stdout.write('Mock payments already exist for resident.\n')
+
+        # 6. Complaints Mock Data
+        from complaints.models import Complaint, ComplaintMessage
+        create_complaints = input("Do you want to create mock complaints data? (y/N): ").strip().lower() == 'y'
+        if create_complaints and resident:
+            if not Complaint.objects.filter(resident=resident).exists():
+                c1 = Complaint.objects.create(resident=resident, category='plumbing', description='Leaking tap. Tap in the bathroom is leaking continuously.', status='submitted', priority='medium')
+                c2 = Complaint.objects.create(resident=resident, category='electrical', description='Fan not working. Ceiling fan is making noise and not spinning fast.', status='in_progress', priority='high')
+                c3 = Complaint.objects.create(resident=resident, category='cleanliness', description='Room cleaning required. Room has not been cleaned for 3 days.', status='resolved', priority='low')
+                ComplaintMessage.objects.create(complaint=c2, sender_role='resident', message='Any update on this?')
+                self.stdout.write(self.style.SUCCESS('Created mock complaints for resident.\n'))
+            else:
+                self.stdout.write('Mock complaints already exist for resident.\n')
 
         self.stdout.write(self.style.SUCCESS('\nDemo data seeding complete!'))
         self.stdout.write('If you created an Admin, you can log in with those credentials.')

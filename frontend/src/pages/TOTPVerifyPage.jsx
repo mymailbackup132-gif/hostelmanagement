@@ -48,7 +48,21 @@ export default function TOTPVerifyPage() {
       const { data } = await api.post('/auth/totp/verify/', { user_id, token })
       login(data)
       toast.success('Welcome back!')
-      navigate(data.role === 'admin' ? '/admin' : '/resident')
+      if (data.role === 'resident') {
+        // Check if profile is complete; if not, redirect to complete-profile
+        try {
+          const profileRes = await api.get('/auth/profile/')
+          if (!profileRes.data.profile_complete) {
+            navigate('/resident/complete-profile')
+          } else {
+            navigate('/resident')
+          }
+        } catch {
+          navigate('/resident')
+        }
+      } else {
+        navigate('/admin')
+      }
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Invalid code')
       setDigits(['', '', '', '', '', ''])

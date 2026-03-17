@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Building2, Shield, Wifi, Droplets, UtensilsCrossed, Wind, Phone, Mail, MapPin, Star, ArrowRight, CheckCircle } from 'lucide-react'
+import hostel1 from '../assets/hostel1.jpg'
+import hostel2 from '../assets/hostel2.jpg'
+import hostel3 from '../assets/hostel3.jpg'
 
 const facilities = [
   { icon: <Wifi size={24} />, title: 'High-Speed Wi-Fi', desc: 'Unlimited internet access across all rooms' },
@@ -108,7 +111,35 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+      {/* Gallery*/}
+      <section id="gallery" style={{ padding: '5rem 2rem' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '0.75rem' }}>A Glimpse of Our Hostel</h2>
+            <p style={{ color: 'var(--text-muted)' }}>Take a look at the premium living experience our hostel offers</p>
+          </div>
+          <div className="gallery-grid">
+            <div className="gallery-card">
+              <img src={hostel1} alt="Common Area" />
+              <div className="gallery-overlay">
+                <span>Modern Rooms</span>
+              </div>
+            </div>
+            <div className="gallery-card">
+              <img src={hostel2} alt="Modern Rooms" />
+              <div className="gallery-overlay">
+                <span>Premium Living</span>
+              </div>
+            </div>
+            <div className="gallery-card">
+              <img src={hostel3} alt="Premium Living" />
+              <div className="gallery-overlay">
+                <span>Common Area</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* ROOMS */}
       <section id="rooms" style={{ padding: '5rem 2rem', background: 'rgba(255,255,255,0.02)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -175,8 +206,8 @@ export default function HomePage() {
           <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>Have questions? We&apos;re here to help.</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             {[
-              [<Phone size={18} />, '+91 98765 43210'],
-              [<Mail size={18} />, 'admin@hostelms.in'],
+              [<Phone size={18} />, '+91 94944 27439'],
+              [<Mail size={18} />, 'maheshsripada98@gmail.com'],
               [<MapPin size={18} />, 'Hyderabad, Telangana'],
             ].map(([icon, val], i) => (
               <div key={i} className="card" style={{ padding: '1.25rem 2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

@@ -1,22 +1,35 @@
+# Core Django
+Django==6.0.3
 asgiref==3.11.1
-certifi==2026.2.25
-charset-normalizer==3.4.5
-Django
-django-cors-headers==4.9.0
-django-otp==1.7.0
+sqlparse==0.5.5
+
+# Django REST Framework
 djangorestframework==3.16.1
-djangorestframework_simplejwt==5.5.1
-idna==3.11
-iniconfig==2.3.0
-packaging==26.0
-pillow==12.1.1
-pluggy==1.6.0
-Pygments==2.19.2
+
+# JWT Authentication
+djangorestframework-simplejwt==5.5.1
 PyJWT==2.12.1
-pyotp==2.9.0
+cryptography==41.0.4
+cffi==1.17.1
+pycparser==2.22
+
+# CORS
+django-cors-headers==4.9.0
+
+# OTP / 2FA
+django-otp==1.7.0
+
+# Environment variables
+python-dotenv==1.0.0
+
+# QR Code generation
+qrcode==8.2
+pillow==12.1.1
+
+# Production server
+gunicorn==21.2.0
+whitenoise==6.7.0
+
+# Testing
 pytest==9.0.2
 pytest-django==4.12.0
-qrcode==8.2
-requests==2.32.5
-sqlparse==0.5.5
-urllib3==2.6.3

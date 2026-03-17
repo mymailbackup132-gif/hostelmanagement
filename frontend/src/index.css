@@ -113,6 +113,17 @@ label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-
   -webkit-overflow-scrolling: touch;
 }
 
+/* Notification panel slide-in */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 @media (min-width: 768px) {
   .mobile-only { display: none !important; }
   .hamburger-btn { display: none !important; }
@@ -122,11 +133,100 @@ label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-
   .sidebar-desktop { display: none !important; }
   .hamburger-btn { display: flex !important; }
   .topbar-brand { display: flex !important; }
-  
-  /* Make cards stack on mobile */
+
+  /* Stack any inline grid to single column */
   .grid-cols-mobile-1 { grid-template-columns: minmax(0, 1fr) !important; }
-  
-  body {
-    font-size: 15px; /* Slightly smaller base text on mobile */
+
+  /* Tighten cards on mobile */
+  .card { border-radius: 12px; }
+
+  /* Smaller base text */
+  body { font-size: 15px; }
+
+  /* Make stat/action grids single-column */
+  [style*="grid-template-columns: repeat(auto-fill"] {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
   }
+
+  /* Reduce padding inside cards */
+  .card [style*="padding: '2rem'"] { padding: 1.25rem !important; }
+
+  /* Button full-width on small screens when stacked */
+  .btn-primary, .btn-secondary { font-size: 0.88rem; padding: 0.65rem 1.1rem; }
+
+  /* Table: reduce cell padding */
+  td, th { padding: 0.55rem 0.65rem !important; font-size: 0.8rem; }
+
+  /* Inputs: ensure minimum tap target */
+  .input { min-height: 44px; }
+  button { min-height: 36px; }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  h1[style] { font-size: clamp(1.2rem, 6vw, 1.8rem) !important; }
+  .table-responsive td, .table-responsive th { padding: 0.45rem 0.5rem !important; font-size: 0.75rem !important; }
+}
+
+/* Gallery Styles */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.gallery-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  aspect-ratio: 4 / 3;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.3s ease;
+}
+
+.gallery-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  transform: translateY(-5px);
+}
+
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-card:hover img {
+  transform: scale(1.1);
+}
+
+.gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 15, 35, 0.9) 0%, transparent 70%);
+  opacity: 0;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem;
+}
+
+.gallery-card:hover .gallery-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay span {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  transform: translateY(20px);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-card:hover .gallery-overlay span {
+  transform: translateY(0);
 }

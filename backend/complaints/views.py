@@ -86,3 +86,8 @@ class AdminComplaintUpdateView(generics.UpdateAPIView):
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[complaint.resident.email],
             )
+            create_notification(
+                recipient_role='resident',
+                recipient_id=complaint.resident.id,
+                message=f'Your complaint [{complaint.complaint_id}] status changed to {complaint.get_status_display()}'
+            )

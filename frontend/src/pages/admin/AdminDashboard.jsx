@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router-dom'
-import { Users, BedDouble, FileText, IndianRupee, Bell, AlertTriangle } from 'lucide-react'
+import { Users, BedDouble, FileText, IndianRupee, Bell, AlertTriangle, BarChart3 } from 'lucide-react'
 import api from '../../api'
 
 function StatCard({ icon, label, value, color = 'var(--brand-light)' }) {
@@ -22,23 +22,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // In Phase 6 we'll build a real /admin/dashboard/ API.
-    // For now, let's fetch individual counts if possible, or just mock skeleton.
-    Promise.allSettled([
-      api.get('/accounts/admin/users/'),
-      api.get('/rooms/admin/bookings/?status=pending'),
-      api.get('/rooms/admin/rooms/'),
-    ]).then(([usr, bk, rm]) => {
-      let rCount = 0, bkCount = 0, bedCount = 0
-      if (usr.status === 'fulfilled') rCount = (usr.value.data.results || usr.value.data).filter(u => u.role === 'resident').length
-      if (bk.status === 'fulfilled') bkCount = (bk.value.data.results || bk.value.data).length
-      if (rm.status === 'fulfilled') {
-        const rooms = rm.value.data.results || rm.value.data
-        rooms.forEach(r => { bedCount += r.available_beds })
-      }
-      setStats({ residents: rCount, pendingBookings: bkCount, availableBeds: bedCount, pendingComplaints: 0 })
-      setLoading(false)
-    })
+    api.get('/auth/admin/stats/')
+      .then(res => setStats(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   return (
@@ -52,12 +39,13 @@ export default function AdminDashboard() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
         <StatCard icon={<Users size={22} />} label="Total Residents" value={stats.residents} />
-        <StatCard icon={<BedDouble size={22} />} label="Available Beds" value={stats.availableBeds} color="var(--success)" />
-        <StatCard icon={<Bell size={22} />} label="Pending Bookings" value={stats.pendingBookings} color={stats.pendingBookings > 0 ? 'var(--warning)' : 'var(--text-muted)'} />
-        <StatCard icon={<AlertTriangle size={22} />} label="Unresolved Complaints" value="—" color="var(--danger)" />
+        <StatCard icon={<BedDouble size={22} />} label="Available Beds" value={stats.available_beds} color="var(--success)" />
+        <StatCard icon={<Bell size={22} />} label="Pending Bookings" value={stats.pending_bookings} color={stats.pending_bookings > 0 ? 'var(--warning)' : 'var(--text-muted)'} />
+        <StatCard icon={<AlertTriangle size={22} />} label="Unresolved Complaints" value={stats.unresolved_complaints} color={stats.unresolved_complaints > 0 ? 'var(--danger)' : 'var(--text-muted)'} />
+        <StatCard icon={<IndianRupee size={22} />} label="Revenue (Monthly)" value={`₹${stats.revenue?.toLocaleString()}`} color="var(--brand)" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         <div className="card" style={{ padding: '1.5rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Quick Actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -67,11 +55,16 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(99,102,241,0.02))' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--brand-light)' }}>Phase 6 Preview</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-            Full analytics, occupancy rate charts, and revenue line graphs will be built out in Phase 6. For now, monitor core operational metrics above.
-          </p>
+        <div className="card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(99,102,241,0.02))', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--brand-light)' }}>Analytics & Reports</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+              View detailed room occupancy, monthly revenue trends, and complaint statistics.
+            </p>
+          </div>
+          <Link to="/admin/analytics" className="btn btn-primary" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+             View Full Analytics <BarChart3 size={16} />
+          </Link>
         </div>
       </div>
     </div>

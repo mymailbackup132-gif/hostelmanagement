@@ -51,6 +51,14 @@ class BookingCreateView(generics.CreateAPIView):
     serializer_class = BookingCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        if not request.user.profile_complete:
+            return Response(
+                {'detail': 'Please complete your profile (upload profile photo and ID proof) before booking a room.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         booking = serializer.save(resident=self.request.user)
         create_notification(
@@ -159,12 +167,15 @@ class AdminBookingApproveView(APIView):
                 status=400
             )
 
-        # Create allocation
+        # Create allocation — QR active only from move-in date
+        from datetime import date as _date
+        initial_qr_status = 'active' if booking.move_in_date <= _date.today() else 'pending_movein'
         alloc = Allocation.objects.create(
             resident=booking.resident,
             bed=bed,
             booking=booking,
             start_date=booking.move_in_date,
+            qr_status=initial_qr_status,
         )
         # Generate QR code image
         qr_data = str(alloc.qr_token)
@@ -225,5 +236,5 @@ class ResidentAllocationView(generics.RetrieveAPIView):
     def get_object(self):
         return Allocation.objects.filter(
             resident=self.request.user,
-            qr_status='active'
+            qr_status__in=['active', 'pending_movein']
         ).latest('start_date')

@@ -4,19 +4,34 @@ import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import api from '../api'
 import toast from 'react-hot-toast'
 
+function FieldError({ msg }) {
+  if (!msg) return null
+  return <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '0.3rem' }}>{msg}</p>
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState({})
   const navigate = useNavigate()
+
+  const validate = () => {
+    const e = {}
+    if (!email.trim()) e.email = 'Email is required.'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Enter a valid email address.'
+    if (!password) e.password = 'Password is required.'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!validate()) return
     setLoading(true)
     try {
-      const { data } = await api.post('/auth/login/', { email, password })
-      // Navigate to TOTP page with user_id
+      const { data } = await api.post('/auth/login/', { email: email.trim().toLowerCase(), password })
       navigate('/totp-verify', { state: { user_id: data.user_id, email: data.email, is_2fa_setup: data.is_2fa_setup } })
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Login failed')
@@ -45,18 +60,20 @@ export default function LoginPage() {
             <label>Email Address</label>
             <div style={{ position: 'relative' }}>
               <Mail size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input id="login-email" className="input" style={{ paddingLeft: '2.75rem' }} type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input id="login-email" className="input" style={{ paddingLeft: '2.75rem', borderColor: errors.email ? '#f87171' : undefined }} type="email" placeholder="you@example.com" value={email} onChange={(e) => { setEmail(e.target.value); setErrors(err => ({ ...err, email: '' })) }} autoFocus />
             </div>
+            <FieldError msg={errors.email} />
           </div>
           <div>
             <label>Password</label>
             <div style={{ position: 'relative' }}>
               <Lock size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input id="login-password" className="input" style={{ paddingLeft: '2.75rem', paddingRight: '3rem' }} type={showPw ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <input id="login-password" className="input" style={{ paddingLeft: '2.75rem', paddingRight: '3rem', borderColor: errors.password ? '#f87171' : undefined }} type={showPw ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => { setPassword(e.target.value); setErrors(err => ({ ...err, password: '' })) }} />
               <button type="button" onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            <FieldError msg={errors.password} />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

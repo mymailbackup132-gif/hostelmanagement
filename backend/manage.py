@@ -2,10 +2,12 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from dotenv import load_dotenv
 
 
 def main():
     """Run administrative tasks."""
+    load_dotenv()  # Load variables from .env if it exists
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hostel.settings")
     try:
         from django.core.management import execute_from_command_line

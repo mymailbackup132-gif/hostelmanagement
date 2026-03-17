@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: hostel-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn hostel.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: hostel-backend.onrender.com
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: False
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://your-app.netlify.app  # Replace with your actual frontend URL after deploying
+      - key: EMAIL_HOST_USER
+        sync: false   # You'll set this manually in Render dashboard
+      - key: EMAIL_HOST_PASSWORD
+        sync: false   # You'll set this manually in Render dashboard
+      - key: FRONTEND_URL
+        value: https://your-app.netlify.app  # Replace with your actual frontend URL after deploying

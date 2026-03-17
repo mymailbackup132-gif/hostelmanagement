@@ -66,7 +66,7 @@ export default function ResidentDashboard() {
           {latestBooking && (
             <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Latest Booking</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
                 <div>
                   <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>Requested Room</div>
                   <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>
