@@ -3,7 +3,8 @@ services:
     name: hostel-backend
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    pythonVersion: "3.12.0"
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py ensure_admin && python manage.py collectstatic --noinput
     startCommand: gunicorn hostel.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: SECRET_KEY
@@ -22,3 +23,9 @@ services:
         sync: false   # You'll set this manually in Render dashboard
       - key: FRONTEND_URL
         value: https://your-app.netlify.app  # Replace with your actual frontend URL after deploying
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false   # Set to your admin email in Render dashboard
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false   # Set to a secure password in Render dashboard
+      - key: DJANGO_SUPERUSER_FULL_NAME
+        value: "Admin User"
