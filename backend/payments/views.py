@@ -12,7 +12,7 @@ from .models import Payment, UPIQRCode, ReminderSchedule
 from .serializers import PaymentSerializer, UPIQRSerializer, ReminderScheduleSerializer
 from accounts.views import IsAdmin
 from rooms.models import Allocation
-from notifications_app.utils import create_notification
+from notifications_app.utils import create_notification, send_email_async
 
 User = get_user_model()
 
@@ -178,17 +178,14 @@ class AdminTriggerRemindersView(APIView):
             lines.append('Please clear any overdue dues immediately to restore gate access.\n')
             lines.append('— Hostel Management')
 
-            try:
-                send_mail(
-                    subject='HostelMS — Your Payment Summary',
-                    message='\n'.join(lines),
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[resident.email],
-                    fail_silently=True,
-                )
-                emailed += 1
-            except Exception:
-                pass
+            # Send email in background
+            send_email_async(
+                subject='HostelMS — Your Payment Summary',
+                message='\n'.join(lines),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[resident.email],
+            )
+            emailed += 1
 
         # 3. Update last_run_at
         schedule = ReminderSchedule.get_singleton()
@@ -258,16 +255,12 @@ class AdminSendResidentReminderView(APIView):
 
         lines.append('— Hostel Management')
 
-        try:
-            send_mail(
-                subject='HostelMS — Payment Reminder',
-                message='\n'.join(lines),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[resident.email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            return Response({'detail': f'Failed to send email: {str(e)}'}, status=500)
+        send_email_async(
+            subject='HostelMS — Payment Reminder',
+            message='\n'.join(lines),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[resident.email],
+        )
 
         create_notification(
             recipient_role='resident',

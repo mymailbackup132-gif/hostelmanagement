@@ -1,6 +1,6 @@
 import pyotp
 import qrcode
-import io, base64, secrets, string, random
+import io, base64, secrets, string, random, threading
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -22,7 +22,7 @@ from .serializers import (
     PasswordResetConfirmSerializer, AdminUserListSerializer,
     ChangePasswordSerializer, CompleteProfileSerializer,
 )
-from notifications_app.utils import create_notification
+from notifications_app.utils import create_notification, send_email_async
 
 User = get_user_model()
 
@@ -43,18 +43,20 @@ class SendEmailOTPView(APIView):
         otp_code = f'{random.randint(0, 999999):06d}'
         EmailOTP.objects.create(email=email, otp=otp_code)
 
-        send_mail(
-            subject='HostelMS — Email Verification OTP',
-            message=(
+        # Send email in background to avoid Gunicorn worker timeouts
+        send_email_async(
+            'HostelMS — Email Verification OTP',
+            (
                 f"Your email verification code is:\n\n"
                 f"  {otp_code}\n\n"
                 f"This code is valid for 10 minutes.\n\n"
                 f"If you did not request this, please ignore this email.\n\n"
                 f"— HostelMS Team"
             ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
+            settings.DEFAULT_FROM_EMAIL,
+            [email]
         )
+
         return Response({'detail': 'OTP sent to your email.'})
 
 
@@ -254,9 +256,10 @@ class PasswordResetRequestView(APIView):
             token = default_token_generator.make_token(user)
             reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
 
-            send_mail(
-                subject='HostelMS — Password Reset',
-                message=(
+            # Send email in background
+            send_email_async(
+                'HostelMS — Password Reset',
+                (
                     f"Hi {user.full_name},\n\n"
                     f"We received a request to reset your password.\n\n"
                     f"Please use the link below to set a new password:\n"
@@ -265,8 +268,8 @@ class PasswordResetRequestView(APIView):
                     f"If you did not request this, please contact the hostel administrator.\n\n"
                     f"— HostelMS Team"
                 ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
+                settings.DEFAULT_FROM_EMAIL,
+                [email]
             )
         except User.DoesNotExist:
             pass  # Don't reveal user existence

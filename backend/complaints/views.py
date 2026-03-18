@@ -8,7 +8,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Complaint, ComplaintMessage
 from .serializers import ComplaintSerializer, ComplaintCreateSerializer, ComplaintMessageSerializer
 from accounts.views import IsAdmin
-from notifications_app.utils import create_notification
+from notifications_app.utils import create_notification, send_email_async
 
 
 class ResidentComplaintListCreateView(generics.ListCreateAPIView):
@@ -80,7 +80,7 @@ class AdminComplaintUpdateView(generics.UpdateAPIView):
         old_status = self.get_object().status
         complaint = serializer.save()
         if old_status != complaint.status:
-            send_mail(
+            send_email_async(
                 subject=f'Complaint [{complaint.complaint_id}] Status Updated',
                 message=f'Hi {complaint.resident.full_name},\n\nYour complaint status has been updated to: {complaint.get_status_display()}\n\nAdmin Notes: {complaint.admin_notes or "None"}',
                 from_email=settings.DEFAULT_FROM_EMAIL,

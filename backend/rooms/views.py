@@ -18,7 +18,7 @@ from .serializers import (
     AdminBookingApprovalSerializer, RoomCreateSerializer
 )
 from accounts.views import IsAdmin
-from notifications_app.utils import create_notification
+from notifications_app.utils import create_notification, send_email_async
 
 User = get_user_model()
 
@@ -215,16 +215,12 @@ class AdminBookingRejectView(APIView):
         booking.rejection_reason = reason
         booking.save()
 
-        try:
-            send_mail(
-                subject='Booking Request Rejected',
-                message=f'Hi {booking.resident.full_name},\n\nYour booking request has been rejected.\nReason: {reason}\n\nPlease contact the hostel admin for more information.',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[booking.resident.email],
-                fail_silently=True,  # Don't crash if SMTP is not configured
-            )
-        except Exception:
-            pass  # Email sending is non-critical; log in production
+        send_email_async(
+            'Booking Request Rejected',
+            f'Hi {booking.resident.full_name},\n\nYour booking request has been rejected.\nReason: {reason}\n\nPlease contact the hostel admin for more information.',
+            settings.DEFAULT_FROM_EMAIL,
+            [booking.resident.email]
+        )
         return Response({'detail': 'Booking rejected and resident notified.'})
 
 
